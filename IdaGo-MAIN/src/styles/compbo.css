@@ -1,0 +1,947 @@
+/* =============== ESTILOS GENERALES - VERSIÓN MEJORADA =============== */
+/* Modificado: Fondo local y overlay más claro */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: url('../assets/fotosegunpag.jpeg') no-repeat center center fixed;
+  background-size: cover;
+  color: #ffffff;
+  min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.75); /* Overlay más claro (original: 0.85) */
+  z-index: -1;
+}
+
+.search-page {
+  margin: 0;
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 80px auto 20px;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Modificado: Contenedor principal con mejor efecto vidrio */
+.search-page .container {
+  max-width: 1200px;
+  width: 100%;
+  padding: 24px;
+  margin: 0 auto;
+  background: rgba(30, 41, 59, 0.65); /* Más transparente */
+  backdrop-filter: blur(16px) saturate(180%); /* Blur más intenso */
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Borde más visible */
+}
+
+.search-page #header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* Modificado: Color de cabecera más cálido */
+.search-page #header h1 {
+  font-size: 2.2rem;
+  color: #FF9E80; /* Original: #FF6F61 */
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+  display: inline-block;
+}
+
+.search-page #header h1::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: #FF9E80; /* Original: #FF6F61 */
+  border-radius: 3px;
+}
+
+.search-page #booking {
+  margin-top: 24px;
+}
+
+.search-page #booking h2 {
+  font-size: 1.8rem;
+  color: #FF9E80; /* Original: #FF6F61 */
+  margin-bottom: 24px;
+  text-align: center;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.search-page #booking h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Modificado: Timer con efecto neón */
+.search-page .timer {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #A5D6A7; /* Original: #4CAF50 - Más brillante */
+  margin-bottom: 24px;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  animation: pulse 2s infinite, neonGlow 3s infinite alternate;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  text-shadow: 0 0 8px rgba(166, 227, 161, 0.6);
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
+
+@keyframes neonGlow {
+  from { box-shadow: 0 0 10px rgba(76, 175, 80, 0.4); }
+  to { box-shadow: 0 0 20px rgba(76, 175, 80, 0.7); }
+}
+
+/* Modificado: Efecto vidrio mejorado */
+.search-page .route {
+  background: rgba(255, 255, 255, 0.08); /* Original: 0.1 */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Original: 0.1 */
+  transition: all 0.3s ease;
+}
+
+.search-page .route:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.search-page .route p {
+  margin: 8px 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+}
+
+.search-page .trips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+/* Modificado: Tarjetas de viaje con mejor hover */
+.search-page .trip {
+  background: rgba(255, 255, 255, 0.08); /* Original: 0.1 */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Original: 0.1 */
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+  flex: 1 1 calc(50% - 24px);
+  position: relative;
+  overflow: hidden;
+}
+
+.search-page .trip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, #FF6F61, #FF9E80); /* Original: #FF6F61 */
+  transition: all 0.3s ease;
+}
+
+.search-page .trip:hover {
+  transform: translateY(-5px) scale(1.02); /* Original: solo translateY */
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+}
+
+.search-page .trip:hover::before {
+  width: 6px;
+  background: #4CAF50;
+}
+
+.search-page .trip p {
+  margin: 10px 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+}
+
+.search-page .trip .price {
+  font-size: 1.1rem;
+  margin: 10px 0;
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+  font-weight: 600;
+}
+
+.search-page .trip .price.internet {
+  color: #A5D6A7; /* Original: #4CAF50 */
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+.search-page .trip .strike {
+  text-decoration: line-through;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.search-page .stops-list {
+  list-style-type: none;
+  margin: 16px 0 0 0;
+  padding: 0;
+}
+
+.search-page .stops-list li {
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+  position: relative;
+  padding-left: 20px;
+}
+
+.search-page .stops-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #FF9E80; /* Original: #FF6F61 */
+  font-size: 1.2rem;
+}
+
+/* Modificado: Botón con efecto 3D completo */
+.search-page .select-btn {
+  background: linear-gradient(135deg, #FF6F61 0%, #FF8E53 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  width: auto;
+  margin-top: 16px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Original: 0.3s ease */
+  display: inline-block;
+  box-shadow: 
+    0 4px 15px rgba(255, 111, 97, 0.3),
+    0 5px 20px -5px rgba(255, 111, 97, 0.2),
+    inset 0 -3px 0 rgba(0,0,0,0.2); /* Sombras 3D */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Efecto de rayo de luz */
+.search-page .select-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: 0.5s;
+  z-index: -1;
+}
+
+.search-page .select-btn:hover {
+  background: linear-gradient(135deg, #FF8E53 0%, #FF6F61 100%);
+  transform: translateY(-3px) scale(1.02); /* Original: solo translateY */
+  box-shadow: 
+    0 8px 20px rgba(255, 111, 97, 0.4),
+    0 10px 30px -5px rgba(255, 111, 97, 0.3),
+    inset 0 -4px 0 rgba(0,0,0,0.15);
+}
+
+.search-page .select-btn:hover::before {
+  left: 100%; /* Animación del rayo */
+}
+
+.search-page .select-btn:active {
+  transform: translateY(1px);
+  box-shadow: 
+    0 3px 10px rgba(255, 111, 97, 0.4),
+    inset 0 -1px 0 rgba(0,0,0,0.1);
+}
+
+/* Estilos para opciones de login - MODERNOS */
+.search-page .login-options {
+  background: rgba(255, 255, 255, 0.08); /* Original: 0.1 */
+  backdrop-filter: blur(16px); /* Original: 12px */
+  -webkit-backdrop-filter: blur(16px);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 100%;
+  margin: 24px auto;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Original: 0.1 */
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.search-page .login-options h2 {
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+  color: #FF9E80; /* Original: #FF6F61 */
+  position: relative;
+}
+
+.search-page .login-options h2::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: #FF9E80; /* Original: #FF6F61 */
+  border-radius: 3px;
+}
+
+.search-page .login-options button {
+  background: linear-gradient(135deg, #FF6F61 0%, #FF8E53 100%);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  width: 100%;
+  margin: 12px 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 111, 97, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.search-page .login-options button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(255, 111, 97, 0.4);
+}
+
+.search-page .login-options button i {
+  font-size: 1.2rem;
+}
+
+/* Estilos para formulario de login - MODERNOS */
+.search-page .login-form {
+  background: rgba(255, 255, 255, 0.08); /* Original: 0.1 */
+  backdrop-filter: blur(16px); /* Original: 12px */
+  -webkit-backdrop-filter: blur(16px);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 100%;
+  margin: 24px auto;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Original: 0.1 */
+  animation: slideUp 0.5s ease-out;
+}
+
+.search-page .login-form h2 {
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+  color: #FF9E80; /* Original: #FF6F61 */
+  text-align: center;
+  position: relative;
+}
+
+.search-page .login-form h2::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: #FF9E80; /* Original: #FF6F61 */
+  border-radius: 3px;
+}
+
+.search-page .login-form label {
+  display: block;
+  margin: 16px 0 8px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+  font-size: 0.9rem;
+}
+
+.search-page .login-form input {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25); /* Original: 0.2 */
+  border-radius: 8px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.05); /* Original: 0.1 */
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  color: #ffffff;
+}
+
+.search-page .login-form input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search-page .login-form input:focus {
+  box-shadow: 0 0 0 3px rgba(255, 158, 128, 0.3); /* Original: rgba(255, 111, 97, 0.3) */
+  outline: none;
+  border-color: #FF9E80; /* Original: #FF6F61 */
+  background: rgba(255, 255, 255, 0.1); /* Original: 0.15 */
+}
+
+/* Estilos para formulario de compra - MODERNOS */
+.search-page .purchase-form {
+  background: rgba(255, 255, 255, 0.08); /* Original: 0.1 */
+  backdrop-filter: blur(16px); /* Original: 12px */
+  -webkit-backdrop-filter: blur(16px);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 700px;
+  width: 100%;
+  margin: 24px auto;
+  text-align: left;
+  max-height: 80vh;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Original: 0.1 */
+  animation: slideUp 0.5s ease-out;
+}
+
+.search-page .form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.search-page .summary {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+  border-left: 4px solid #FF9E80; /* Original: #FF6F61 */
+}
+
+.search-page .summary h3 {
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+  text-align: center;
+}
+
+.search-page .summary p {
+  margin: 10px 0;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+  line-height: 1.6;
+}
+
+.search-page .form-group {
+  margin-bottom: 20px;
+}
+
+.search-page .form-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+  font-size: 0.9rem;
+}
+
+.search-page .form-group input,
+.search-page .form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.25); /* Original: 0.2 */
+  border-radius: 8px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.05); /* Original: 0.1 */
+  transition: all 0.3s ease;
+  color: #ffffff;
+}
+
+.search-page .form-group input::placeholder,
+.search-page .form-group select::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search-page .form-group input:focus,
+.search-page .form-group select:focus {
+  border-color: rgba(255, 255, 255, 0.4);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 158, 128, 0.3); /* Original: rgba(255, 111, 97, 0.3) */
+  background: rgba(255, 255, 255, 0.1); /* Original: 0.15 */
+}
+
+.search-page .form-row {
+  display: flex;
+  gap: 20px;
+}
+
+.search-page .form-row .form-group {
+  flex: 1;
+}
+
+/* Mapa de asientos modernizado */
+.seat-map {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 25px;
+  border-radius: 12px;
+  max-width: 320px;
+  margin: 0 auto;
+  position: relative;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Original: 0.1 */
+}
+
+.seat-map h3 {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+  margin-bottom: 25px;
+  font-size: 1.3rem;
+  position: relative;
+}
+
+.seat-map h3::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 2px;
+  background: #FF9E80; /* Original: #FF6F61 */
+}
+
+.seats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  position: relative;
+  padding: 20px 0;
+  justify-content: center;
+}
+
+.seats::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  bottom: 15px;
+  left: 50%;
+  width: 30px;
+  background: linear-gradient(to right, rgba(236, 240, 241, 0.1) 70%, rgba(213, 219, 219, 0.1) 100%);
+  transform: translateX(-50%);
+  border-radius: 3px;
+}
+
+.seat {
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.seat:nth-child(odd) {
+  margin-right: calc(50% - 15px);
+}
+
+.seat:nth-child(even) {
+  margin-left: calc(50% - 15px);
+}
+
+.seat.selected {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  transform: scale(1.05);
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.5);
+  animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: scale(1.05); }
+  50% { transform: scale(1.1); }
+}
+
+.seat:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #1a5276 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.seat:active {
+  transform: scale(0.98);
+}
+
+/* Botones modernizados */
+.search-page .confirm-button {
+  background: linear-gradient(135deg, #FF6F61 0%, #FF8E53 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  width: 100%;
+  margin-top: 20px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Original: 0.3s ease */
+  box-shadow: 
+    0 4px 15px rgba(255, 111, 97, 0.3),
+    0 5px 20px -5px rgba(255, 111, 97, 0.2),
+    inset 0 -3px 0 rgba(0,0,0,0.2); /* Sombras 3D */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Efecto de rayo de luz */
+.search-page .confirm-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: 0.5s;
+  z-index: -1;
+}
+
+.search-page .confirm-button:hover {
+  background: linear-gradient(135deg, #FF8E53 0%, #FF6F61 100%);
+  transform: translateY(-3px) scale(1.02); /* Original: solo translateY */
+  box-shadow: 
+    0 8px 20px rgba(255, 111, 97, 0.4),
+    0 10px 30px -5px rgba(255, 111, 97, 0.3),
+    inset 0 -4px 0 rgba(0,0,0,0.15);
+}
+
+.search-page .confirm-button:hover::before {
+  left: 100%; /* Animación del rayo */
+}
+
+.search-page .confirm-button:active {
+  transform: translateY(1px);
+  box-shadow: 
+    0 3px 10px rgba(255, 111, 97, 0.4),
+    inset 0 -1px 0 rgba(0,0,0,0.1);
+}
+
+/* Estilos para el ticket - MODERNOS */
+.search-page #ticket {
+  background: rgba(255, 255, 255, 0.08); /* Original: 0.1 */
+  backdrop-filter: blur(16px); /* Original: 12px */
+  -webkit-backdrop-filter: blur(16px);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 100%;
+  margin: 24px auto;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Original: 0.1 */
+  animation: slideUp 0.5s ease-out;
+}
+
+.search-page #ticket h2 {
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+  color: #FF9E80; /* Original: #FF6F61 */
+  text-align: center;
+  position: relative;
+}
+
+.search-page #ticket h2::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: #FF9E80; /* Original: #FF6F61 */
+}
+
+.search-page #ticket p {
+  margin: 12px 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+  line-height: 1.6;
+}
+
+.search-page #ticket strong {
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+  font-weight: 600;
+}
+
+.search-page #ticket button {
+  background: linear-gradient(135deg, #FF6F61 0%, #FF8E53 100%);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  width: 100%;
+  margin-top: 24px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 111, 97, 0.3);
+}
+
+.search-page #ticket button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(255, 111, 97, 0.4);
+}
+
+/* Mensajes modernizados */
+.search-page .success-message {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(69, 160, 73, 0.9));
+  color: white;
+  padding: 18px 28px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  font-size: 1rem;
+  font-weight: 500;
+  z-index: 1000;
+  animation: slideIn 0.5s ease-out, fadeOut 0.5s ease-in 4.5s forwards;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 400px;
+}
+
+.search-page .success-message::before {
+  content: '✓';
+  font-size: 1.5rem;
+}
+
+.search-page .error-message {
+  background-color: rgba(248, 113, 113, 0.2);
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+.search-page .error-message button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+  transition: transform 0.2s ease;
+}
+
+.search-page .error-message button:hover {
+  transform: rotate(90deg);
+}
+
+/* Asientos seleccionados modernizados */
+.search-page .selected-seats-summary {
+  margin: 20px 0;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border-left: 4px solid #FF9E80; /* Original: #FF6F61 */
+}
+
+.search-page .selected-seats-summary h4 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.92); /* Original: #ffffff */
+  font-weight: 600;
+}
+
+.search-page .selected-seats-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.search-page .selected-seat-badge {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.7), rgba(69, 160, 73, 0.7));
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search-page .selected-seat-badge::before {
+  content: '✓';
+  font-size: 0.9rem;
+}
+
+/* Diseño responsivo */
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll;
+  }
+  
+  .search-page {
+    padding: 16px;
+    margin: 60px auto 20px;
+  }
+  
+  .search-page .container {
+    padding: 16px;
+    border-radius: 12px;
+    backdrop-filter: blur(12px); /* Blur más suave en móviles */
+  }
+  
+  .search-page #header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .search-page .trip {
+    flex: 1 1 100%;
+    padding: 16px;
+  }
+  
+  .search-page .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .search-page .success-message {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    max-width: none;
+    padding: 14px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .seat-map {
+    max-width: 280px;
+    padding: 20px;
+  }
+  
+  .seat {
+    width: 45px;
+    height: 45px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-page {
+    margin: 40px auto 20px;
+  }
+  
+  .search-page #header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .search-page #booking h2,
+  .search-page .login-form h2,
+  .search-page .login-options h2,
+  .search-page #ticket h2 {
+    font-size: 1.4rem;
+  }
+  
+  .search-page .timer {
+    font-size: 1.2rem;
+    padding: 12px;
+  }
+  
+  .search-page .select-btn,
+  .search-page .confirm-button,
+  .search-page #ticket button,
+  .search-page .login-options button {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+}
