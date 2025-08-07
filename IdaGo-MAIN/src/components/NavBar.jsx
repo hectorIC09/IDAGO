@@ -1,47 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import AnchorLink from 'react-anchor-link-smooth-scroll';
-import Swal from 'sweetalert2';
-import emailjs from 'emailjs-com';
-import logo from '../assets/idagologo.png';
+import AnchorLink from 'react-anchor-link-smooth-scroll'; // Para hacer scroll suave al dar clic en enlaces internos
+import Swal from 'sweetalert2'; // Librería para mostrar ventanas emergentes bonitas
+import emailjs from 'emailjs-com'; // Servicio para enviar correos desde el frontend
+import logo from '../assets/idagologo.png'; // Logo del proyecto
 
+// Configuración del servicio de email (EmailJS)
 const SERVICE_ID = 'service_vy5a25e';
 const TEMPLATE_ID = 'template_8tjnu97';
 const PUBLIC_KEY = '-vhAycM9S3ZbcGZIb';
 
 const NavBar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false); // Guarda si la página se desplazó hacia abajo
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Guarda si el usuario está logueado
+  const [userEmail, setUserEmail] = useState(''); // Guarda el correo del usuario
 
-  // Verificar sesión al cargar
+  // Al cargar la página, revisa si el usuario ya había iniciado sesión antes
   useEffect(() => {
-    const storedEmail = localStorage.getItem('userEmail');
+    const storedEmail = localStorage.getItem('userEmail'); // Busca el correo guardado
     if (storedEmail) {
       setIsLoggedIn(true);
       setUserEmail(storedEmail);
     }
 
+    // Cambia el estado si el usuario hace scroll
     const handleScroll = () => setIsScrolled(window.scrollY > 0);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll); // Limpia el evento al salir
   }, []);
 
-  // Función para validar email
+  // Verifica que el correo tenga un formato válido
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // Función para medir fortaleza de contraseña
+  // Calcula qué tan segura es la contraseña
   const getPasswordStrength = (password) => {
     let score = 0;
-    if (password.length >= 8) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[0-9]/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
+    if (password.length >= 8) score++; // Tiene al menos 8 caracteres
+    if (/[A-Z]/.test(password)) score++; // Tiene mayúsculas
+    if (/[0-9]/.test(password)) score++; // Tiene números
+    if (/[^A-Za-z0-9]/.test(password)) score++; // Tiene símbolos
     if (score <= 1) return { label: "Débil", color: "red" };
     if (score <= 3) return { label: "Media", color: "orange" };
     return { label: "Fuerte", color: "green" };
   };
 
-  // Función para enviar correo de verificación
+  // Envía un código de verificación al correo del usuario
   const sendVerificationEmail = async (email, code) => {
     try {
       await emailjs.send(
@@ -58,7 +60,7 @@ const NavBar = () => {
     }
   };
 
-  // Función para mostrar el formulario de registro
+  // Muestra el formulario de registro
   const showRegisterForm = () => {
     Swal.fire({
       title: "Registrarse",
@@ -76,11 +78,13 @@ const NavBar = () => {
         const passwordInput = Swal.getPopup().querySelector('#register-password');
         const strengthText = Swal.getPopup().querySelector('#password-strength');
 
+        // Muestra la fortaleza de la contraseña mientras el usuario escribe
         passwordInput.addEventListener('input', () => {
           const strength = getPasswordStrength(passwordInput.value);
           strengthText.innerHTML = `Seguridad: <span style="color: ${strength.color}; font-weight: bold;">${strength.label}</span>`;
         });
 
+        // Cambia al formulario de inicio de sesión
         const switchToLogin = document.getElementById('switch-to-login');
         if (switchToLogin) {
           switchToLogin.addEventListener('click', (e) => {
@@ -94,6 +98,7 @@ const NavBar = () => {
         const email = Swal.getPopup().querySelector('#register-email').value.trim();
         const password = Swal.getPopup().querySelector('#register-password').value;
 
+        // Validaciones básicas
         if (!email || !password) {
           Swal.showValidationMessage("Todos los campos son obligatorios");
           return false;
@@ -107,16 +112,19 @@ const NavBar = () => {
           return false;
         }
 
+        // Revisa si ya existe el correo
         const exists = await checkIfEmailExists(email);
         if (exists) {
           Swal.showValidationMessage("Ya existe una cuenta con ese correo");
           return false;
         }
 
+        // Genera un código de verificación y lo envía por correo
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         const success = await sendVerificationEmail(email, code);
         if (!success) return false;
 
+        // Guarda temporalmente la info para la verificación
         localStorage.setItem("verify_email", email);
         localStorage.setItem("verify_password", password);
         localStorage.setItem("verify_code", code);
@@ -134,22 +142,25 @@ const NavBar = () => {
             const email = localStorage.getItem("verify_email");
             const password = localStorage.getItem("verify_password");
 
+            // Revisa si el código es correcto
             if (inputCode !== storedCode) {
               Swal.showValidationMessage("Código incorrecto");
               return false;
             }
 
+            // Registra al usuario en el backend
             const result = await registerUser(email, password);
             if (!result.success) {
               Swal.showValidationMessage(result.message);
               return false;
             }
 
-            // Actualizar estado de autenticación después de registro
+            // Guarda sesión iniciada
             setIsLoggedIn(true);
             setUserEmail(email);
             localStorage.setItem('userEmail', email);
 
+            // Limpia datos temporales
             localStorage.removeItem("verify_code");
             localStorage.removeItem("verify_email");
             localStorage.removeItem("verify_password");
@@ -160,7 +171,7 @@ const NavBar = () => {
     });
   };
 
-  // Funciones de conexión con el backend
+  // Función para registrar al usuario en el backend
   const registerUser = async (email, password) => {
     try {
       const response = await fetch('http://localhost:3000/register', {
@@ -178,6 +189,7 @@ const NavBar = () => {
     }
   };
 
+  // Función para iniciar sesión en el backend
   const loginUser = async (email, password) => {
     try {
       const response = await fetch('http://localhost:3000/login', {
@@ -195,6 +207,7 @@ const NavBar = () => {
     }
   };
 
+  // Revisa en el backend si un correo ya está registrado
   const checkIfEmailExists = async (email) => {
     try {
       const res = await fetch('http://localhost:3000/check-email', {
@@ -211,7 +224,7 @@ const NavBar = () => {
     }
   };
 
-  // Función para inicio de sesión
+  // Muestra formulario de inicio de sesión
   const handleLoginClick = () => {
     Swal.fire({
       title: "Iniciar Sesión",
@@ -225,6 +238,7 @@ const NavBar = () => {
       focusConfirm: false,
       confirmButtonText: "Ingresar",
       didOpen: () => {
+        // Cambiar a formulario de registro
         const switchToRegister = document.getElementById('switch-to-register');
         if (switchToRegister) {
           switchToRegister.addEventListener('click', (e) => {
@@ -238,6 +252,7 @@ const NavBar = () => {
         const email = Swal.getPopup().querySelector('#login-email').value.trim();
         const password = Swal.getPopup().querySelector('#login-password').value;
 
+        // Validaciones básicas
         if (!email || !password) {
           Swal.showValidationMessage("Todos los campos son obligatorios");
           return false;
@@ -247,13 +262,14 @@ const NavBar = () => {
           return false;
         }
 
+        // Intenta iniciar sesión en el backend
         const result = await loginUser(email, password);
         if (!result.success) {
           Swal.showValidationMessage(result.message);
           return false;
         }
 
-        // Actualizar estado de autenticación
+        // Guarda sesión iniciada
         setIsLoggedIn(true);
         setUserEmail(email);
         localStorage.setItem('userEmail', email);
@@ -264,7 +280,7 @@ const NavBar = () => {
     });
   };
 
-  // Función para cerrar sesión
+  // Cierra sesión del usuario
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserEmail('');
@@ -278,6 +294,7 @@ const NavBar = () => {
         <img src={logo} alt="IdaGo Logo" className="logo" />
       </div>
       <ul className="nav_links">
+        {/* Enlaces que llevan a secciones dentro de la página */}
         <li className="link"><AnchorLink href="#header">Inicio</AnchorLink></li>
         <li className="link"><AnchorLink href="#plan-section">Aventuras</AnchorLink></li>
         <li className="link"><AnchorLink href="#safe-spaces">Espacios</AnchorLink></li>
@@ -285,6 +302,7 @@ const NavBar = () => {
       </ul>
       <div className="nav_buttons">
         {isLoggedIn ? (
+          // Si está logueado, muestra el correo y botón para cerrar sesión
           <div className="user-menu">
             <span className="user-email">{userEmail}</span>
             <button className="btn btn-logout" onClick={handleLogout}>
@@ -292,6 +310,7 @@ const NavBar = () => {
             </button>
           </div>
         ) : (
+          // Si no está logueado, muestra el botón para iniciar sesión
           <button className="btn" onClick={handleLoginClick}>Iniciar Sesión</button>
         )}
       </div>
