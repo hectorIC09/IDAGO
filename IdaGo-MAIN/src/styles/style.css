@@ -478,14 +478,13 @@
 /* ===== SECCIÓN "MEJORES VIAJES" ===== */
 .travellers__container {
     padding: 5rem 1rem;
-    /*background-color: var(--extra-light); /* Fondo gris claro */
     background: rgba(5, 22, 77, 0.1);  /* Blanco semi-transparente */
     backdrop-filter: blur(8px);          /* Efecto de desenfoque */
    -webkit-backdrop-filter: blur(10px);  /* Soporte para Safari */
 
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 /* Grid adaptable para tarjetas */
