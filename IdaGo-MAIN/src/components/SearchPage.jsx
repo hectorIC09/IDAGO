@@ -219,59 +219,93 @@ const SearchPage = () => {
   };
 
   const handlePurchase = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
 
-    if (!formData.name || !formData.email) {
-      alert("Por favor, completa todos los campos.");
-      setIsLoading(false);
-      return;
-    }
+  e.preventDefault();
+  setIsLoading(true);
 
-    if (selectedSeats.length < passengers) {
-      alert("Por favor, selecciona un asiento para cada pasajero.");
-      setIsLoading(false);
-      return;
-    }
+  if (!formData.name || !formData.email) {
+    alert("Por favor, completa todos los campos.");
+    setIsLoading(false);
+    return;
+  }
 
-    if (formData.paymentMethod === "Tarjeta de crédito" && !validateCard()) {
-      setIsLoading(false);
-      return;
-    }
+  if (selectedSeats.length < passengers) {
+    alert("Por favor, selecciona un asiento para cada pasajero.");
+    setIsLoading(false);
+    return;
+  }
 
-    if (formData.paymentMethod === "PayPal" && !formData.paypalEmail.includes('@')) {
-      alert("Por favor ingresa un email de PayPal válido");
-      setIsLoading(false);
-      return;
-    }
+  if (formData.paymentMethod === "Tarjeta de crédito" && !validateCard()) {
+    setIsLoading(false);
+    return;
+  }
 
-    const priceValue = selectedTrip?.precio ? parseFloat(selectedTrip.precio) : 0;
-    const totalPrice = priceValue * passengers;
-    const ticketNumber = Math.floor(Math.random() * 1000000);
+  if (formData.paymentMethod === "PayPal" && !formData.paypalEmail.includes('@')) {
+    alert("Por favor ingresa un email de PayPal válido");
+    setIsLoading(false);
+    return;
+  }
 
-    setTimeout(() => {
-      setTicket({
-        number: ticketNumber,
-        date: new Date().toLocaleDateString(),
-        departure: selectedTrip.origen,
-        arrival: selectedTrip.destino,
-        seats: selectedSeats,
-        price: `$${totalPrice.toFixed(2)}`,
-        name: formData.name,
-        email: formData.email,
-        paymentMethod: formData.paymentMethod,
-        passengerNames: formData.passengerNames
+  // Enviar datos al backend si es tarjeta
+  if (formData.paymentMethod === "Tarjeta de crédito") {
+    try {
+      const [month, year] = formData.cardExpiry.split('/');
+      const formattedDate = `20${year}-${month.padStart(2, '0')}-01`; // Formato YYYY-MM-DD
+
+      const response = await fetch('http://localhost:3000/add-comprador', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          Nombre: formData.name,
+          Email: formData.email,
+          Tarjeta: formData.cardNumber.replace(/\s+/g, ''),
+          Fechaven: formattedDate,
+          Cvv: formData.cardCVV
+        })
       });
 
-      setCurrentStep(5);
-      setPurchaseSuccess(true);
-      setIsLoading(false);
+      const data = await response.json();
 
-      setTimeout(() => {
-        setPurchaseSuccess(false);
-      }, 5000);
-    }, 1500);
-  };
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al registrar al comprador.');
+      }
+
+      console.log('Comprador registrado con éxito');
+    } catch (error) {
+      console.error('Error:', error.message);
+      alert('Hubo un problema al registrar los datos del comprador.');
+      setIsLoading(false);
+      return;
+    }
+  }
+
+  const priceValue = selectedTrip?.precio ? parseFloat(selectedTrip.precio) : 0;
+  const totalPrice = priceValue * passengers;
+  const ticketNumber = Math.floor(Math.random() * 1000000);
+
+  setTicket({
+    number: ticketNumber,
+    date: new Date().toLocaleDateString(),
+    departure: selectedTrip.origen,
+    arrival: selectedTrip.destino,
+    seats: selectedSeats,
+    price: `$${totalPrice.toFixed(2)}`,
+    name: formData.name,
+    email: formData.email,
+    paymentMethod: formData.paymentMethod,
+    passengerNames: formData.passengerNames
+  });
+
+  setCurrentStep(5);
+  setPurchaseSuccess(true);
+  setIsLoading(false);
+
+  setTimeout(() => {
+    setPurchaseSuccess(false);
+  }, 5000);
+};
 
   const nextStep = () => setCurrentStep(prev => prev + 1);
   const prevStep = () => setCurrentStep(prev => prev - 1);
