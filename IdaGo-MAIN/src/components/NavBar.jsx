@@ -1,49 +1,125 @@
 import React, { useState, useEffect } from 'react';
-import AnchorLink from 'react-anchor-link-smooth-scroll'; // Para hacer scroll suave al dar clic en enlaces internos
-import Swal from 'sweetalert2'; // Librería para mostrar ventanas emergentes bonitas
-import emailjs from 'emailjs-com'; // Servicio para enviar correos desde el frontend
-import logo from '../assets/idagologo.png'; // Logo del proyecto
+import AnchorLink from 'react-anchor-link-smooth-scroll';
+import Swal from 'sweetalert2';
+import emailjs from 'emailjs-com';
+import logo from '../assets/idagologo.png';
 
-// Configuración del servicio de email (EmailJS)
 const SERVICE_ID = 'service_vy5a25e';
 const TEMPLATE_ID = 'template_8tjnu97';
 const PUBLIC_KEY = '-vhAycM9S3ZbcGZIb';
 
 const NavBar = () => {
-  const [isScrolled, setIsScrolled] = useState(false); // Guarda si la página se desplazó hacia abajo
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Guarda si el usuario está logueado
-  const [userEmail, setUserEmail] = useState(''); // Guarda el correo del usuario
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [logoutTimer, setLogoutTimer] = useState(null);
 
-  // Al cargar la página, revisa si el usuario ya había iniciado sesión antes
+  // Función para iniciar el temporizador de cierre (5 minutos)
+  const startLogoutTimer = () => {
+    // Limpiar temporizador anterior si existe
+    if (logoutTimer) clearTimeout(logoutTimer);
+
+    // Configurar nuevo temporizador (5 minutos)
+    const timer = setTimeout(() => {
+      handleAutoLogout();
+    }, 5 * 60 * 1000); // 300,000 ms = 5 minutos
+
+    setLogoutTimer(timer);
+  };
+
+  // Cierre automático de sesión
+  const handleAutoLogout = () => {
+    setIsLoggedIn(false);
+    setUserEmail('');
+    localStorage.removeItem('userEmail');
+    Swal.fire({
+      title: "Sesión finalizada",
+      text: "Tu sesión ha caducado automáticamente después de 5 minutos",
+      icon: "info"
+    });
+  };
+
+  // Función de cierre de sesión manual
+  const handleLogout = () => {
+    if (logoutTimer) clearTimeout(logoutTimer);
+    setIsLoggedIn(false);
+    setUserEmail('');
+    localStorage.removeItem('userEmail');
+    Swal.fire("Sesión cerrada", "Has salido de tu cuenta.", "success");
+  };
+
   useEffect(() => {
-    const storedEmail = localStorage.getItem('userEmail'); // Busca el correo guardado
+    const storedEmail = localStorage.getItem('userEmail');
     if (storedEmail) {
       setIsLoggedIn(true);
       setUserEmail(storedEmail);
+      startLogoutTimer(); // Iniciar temporizador al cargar si hay sesión activa
     }
 
-    // Cambia el estado si el usuario hace scroll
     const handleScroll = () => setIsScrolled(window.scrollY > 0);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll); // Limpia el evento al salir
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (logoutTimer) clearTimeout(logoutTimer); // Limpiar al desmontar
+    };
   }, []);
 
-  // Verifica que el correo tenga un formato válido
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // Calcula qué tan segura es la contraseña
+  // Función mejorada de validación de contraseña
   const getPasswordStrength = (password) => {
+    if (!password) return { label: "", color: "transparent" };
+    
+    const hasMinLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
+    const hasRepeatingChars = /(.)\1{3,}/.test(password);
+    const hasCommonSequences = /(123|abc|qwerty|password|admin|1111|0000)/i.test(password);
+    const hasUserInfo = userEmail && password.includes(userEmail.split('@')[0]);
+
     let score = 0;
-    if (password.length >= 8) score++; // Tiene al menos 8 caracteres
-    if (/[A-Z]/.test(password)) score++; // Tiene mayúsculas
-    if (/[0-9]/.test(password)) score++; // Tiene números
-    if (/[^A-Za-z0-9]/.test(password)) score++; // Tiene símbolos
-    if (score <= 1) return { label: "Débil", color: "red" };
-    if (score <= 3) return { label: "Media", color: "orange" };
-    return { label: "Fuerte", color: "green" };
+    if (hasMinLength) score += 1;
+    if (password.length >= 12) score += 1;
+    if (hasUpperCase) score += 1;
+    if (hasLowerCase) score += 1;
+    if (hasNumber) score += 1;
+    if (hasSpecialChar) score += 1;
+    
+    if (hasRepeatingChars) score -= 2;
+    if (hasCommonSequences) score -= 2;
+    if (hasUserInfo) score -= 1;
+
+    if (!hasMinLength) {
+      return { label: "Muy corta", color: "red", requirements: { hasMinLength, hasUpperCase, hasLowerCase, hasNumber, hasSpecialChar } };
+    }
+    if (score <= 2 || hasRepeatingChars || hasCommonSequences) {
+      return { label: "Muy débil", color: "red", requirements: { hasMinLength, hasUpperCase, hasLowerCase, hasNumber, hasSpecialChar } };
+    }
+    if (score <= 4) {
+      return { label: "Débil", color: "orange", requirements: { hasMinLength, hasUpperCase, hasLowerCase, hasNumber, hasSpecialChar } };
+    }
+    if (score <= 6) {
+      return { label: "Media", color: "#ffcc00", requirements: { hasMinLength, hasUpperCase, hasLowerCase, hasNumber, hasSpecialChar } };
+    }
+    return { label: "Fuerte", color: "green", requirements: { hasMinLength, hasUpperCase, hasLowerCase, hasNumber, hasSpecialChar } };
   };
 
-  // Envía un código de verificación al correo del usuario
+  // Función para mostrar detalles de requisitos
+  const renderPasswordRequirements = (requirements) => {
+    return `
+      <div style="text-align: left; font-size: 12px; margin-top: 5px;">
+        <div>${requirements.hasMinLength ? '✓' : '✗'} Mínimo 8 caracteres</div>
+        <div>${requirements.hasUpperCase ? '✓' : '✗'} Al menos una mayúscula</div>
+        <div>${requirements.hasLowerCase ? '✓' : '✗'} Al menos una minúscula</div>
+        <div>${requirements.hasNumber ? '✓' : '✗'} Al menos un número</div>
+        <div>${requirements.hasSpecialChar ? '✓' : '✗'} Al menos un carácter especial</div>
+      </div>
+    `;
+  };
+
   const sendVerificationEmail = async (email, code) => {
     try {
       await emailjs.send(
@@ -60,14 +136,14 @@ const NavBar = () => {
     }
   };
 
-  // Muestra el formulario de registro
   const showRegisterForm = () => {
     Swal.fire({
       title: "Registrarse",
       html: `
         <input type="email" id="register-email" class="swal2-input" placeholder="Correo electrónico">
         <input type="password" id="register-password" class="swal2-input" placeholder="Contraseña">
-        <div id="password-strength" style="text-align: left; margin: 5px 0 10px; font-size: 14px; min-height: 20px;"></div>
+        <div id="password-strength" style="text-align: left; margin: 5px 0 5px; font-size: 14px; min-height: 20px;"></div>
+        <div id="password-requirements" style="margin-bottom: 10px;"></div>
         <div style="text-align: center; margin-top: 10px; font-size: 14px;">
           ¿Ya tienes cuenta? <a href="#" id="switch-to-login" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">Inicia sesión aquí</a>
         </div>
@@ -77,14 +153,14 @@ const NavBar = () => {
       didOpen: () => {
         const passwordInput = Swal.getPopup().querySelector('#register-password');
         const strengthText = Swal.getPopup().querySelector('#password-strength');
+        const requirementsText = Swal.getPopup().querySelector('#password-requirements');
 
-        // Muestra la fortaleza de la contraseña mientras el usuario escribe
         passwordInput.addEventListener('input', () => {
           const strength = getPasswordStrength(passwordInput.value);
           strengthText.innerHTML = `Seguridad: <span style="color: ${strength.color}; font-weight: bold;">${strength.label}</span>`;
+          requirementsText.innerHTML = renderPasswordRequirements(strength.requirements);
         });
 
-        // Cambia al formulario de inicio de sesión
         const switchToLogin = document.getElementById('switch-to-login');
         if (switchToLogin) {
           switchToLogin.addEventListener('click', (e) => {
@@ -97,8 +173,8 @@ const NavBar = () => {
       preConfirm: async () => {
         const email = Swal.getPopup().querySelector('#register-email').value.trim();
         const password = Swal.getPopup().querySelector('#register-password').value;
+        const strength = getPasswordStrength(password);
 
-        // Validaciones básicas
         if (!email || !password) {
           Swal.showValidationMessage("Todos los campos son obligatorios");
           return false;
@@ -107,24 +183,21 @@ const NavBar = () => {
           Swal.showValidationMessage("Correo inválido");
           return false;
         }
-        if (password.length < 6) {
-          Swal.showValidationMessage("La contraseña debe tener al menos 6 caracteres");
+        if (strength.label === "Muy corta" || strength.label === "Muy débil") {
+          Swal.showValidationMessage("La contraseña no cumple con los requisitos mínimos de seguridad");
           return false;
         }
 
-        // Revisa si ya existe el correo
         const exists = await checkIfEmailExists(email);
         if (exists) {
           Swal.showValidationMessage("Ya existe una cuenta con ese correo");
           return false;
         }
 
-        // Genera un código de verificación y lo envía por correo
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         const success = await sendVerificationEmail(email, code);
         if (!success) return false;
 
-        // Guarda temporalmente la info para la verificación
         localStorage.setItem("verify_email", email);
         localStorage.setItem("verify_password", password);
         localStorage.setItem("verify_code", code);
@@ -142,25 +215,22 @@ const NavBar = () => {
             const email = localStorage.getItem("verify_email");
             const password = localStorage.getItem("verify_password");
 
-            // Revisa si el código es correcto
             if (inputCode !== storedCode) {
               Swal.showValidationMessage("Código incorrecto");
               return false;
             }
 
-            // Registra al usuario en el backend
             const result = await registerUser(email, password);
             if (!result.success) {
               Swal.showValidationMessage(result.message);
               return false;
             }
 
-            // Guarda sesión iniciada
             setIsLoggedIn(true);
             setUserEmail(email);
             localStorage.setItem('userEmail', email);
+            startLogoutTimer(); // Iniciar temporizador después del registro
 
-            // Limpia datos temporales
             localStorage.removeItem("verify_code");
             localStorage.removeItem("verify_email");
             localStorage.removeItem("verify_password");
@@ -171,7 +241,6 @@ const NavBar = () => {
     });
   };
 
-  // Función para registrar al usuario en el backend
   const registerUser = async (email, password) => {
     try {
       const response = await fetch('http://localhost:3000/register', {
@@ -189,7 +258,6 @@ const NavBar = () => {
     }
   };
 
-  // Función para iniciar sesión en el backend
   const loginUser = async (email, password) => {
     try {
       const response = await fetch('http://localhost:3000/login', {
@@ -201,13 +269,17 @@ const NavBar = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Error al iniciar sesión');
 
+      setIsLoggedIn(true);
+      setUserEmail(email);
+      localStorage.setItem('userEmail', email);
+      startLogoutTimer(); // Iniciar temporizador después del login
+      
       return { success: true, message: data.message };
     } catch (error) {
       return { success: false, message: error.message };
     }
   };
 
-  // Revisa en el backend si un correo ya está registrado
   const checkIfEmailExists = async (email) => {
     try {
       const res = await fetch('http://localhost:3000/check-email', {
@@ -224,7 +296,6 @@ const NavBar = () => {
     }
   };
 
-  // Muestra formulario de inicio de sesión
   const handleLoginClick = () => {
     Swal.fire({
       title: "Iniciar Sesión",
@@ -238,7 +309,6 @@ const NavBar = () => {
       focusConfirm: false,
       confirmButtonText: "Ingresar",
       didOpen: () => {
-        // Cambiar a formulario de registro
         const switchToRegister = document.getElementById('switch-to-register');
         if (switchToRegister) {
           switchToRegister.addEventListener('click', (e) => {
@@ -252,7 +322,6 @@ const NavBar = () => {
         const email = Swal.getPopup().querySelector('#login-email').value.trim();
         const password = Swal.getPopup().querySelector('#login-password').value;
 
-        // Validaciones básicas
         if (!email || !password) {
           Swal.showValidationMessage("Todos los campos son obligatorios");
           return false;
@@ -262,30 +331,16 @@ const NavBar = () => {
           return false;
         }
 
-        // Intenta iniciar sesión en el backend
         const result = await loginUser(email, password);
         if (!result.success) {
           Swal.showValidationMessage(result.message);
           return false;
         }
-
-        // Guarda sesión iniciada
-        setIsLoggedIn(true);
-        setUserEmail(email);
-        localStorage.setItem('userEmail', email);
         
         Swal.fire("¡Bienvenido!", "Has iniciado sesión correctamente.", "success");
         return true;
       }  
     });
-  };
-
-  // Cierra sesión del usuario
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserEmail('');
-    localStorage.removeItem('userEmail');
-    Swal.fire("Sesión cerrada", "Has salido de tu cuenta.", "success");
   };
 
   return (
@@ -294,7 +349,6 @@ const NavBar = () => {
         <img src={logo} alt="IdaGo Logo" className="logo" />
       </div>
       <ul className="nav_links">
-        {/* Enlaces que llevan a secciones dentro de la página */}
         <li className="link"><AnchorLink href="#header">Inicio</AnchorLink></li>
         <li className="link"><AnchorLink href="#plan-section">Aventuras</AnchorLink></li>
         <li className="link"><AnchorLink href="#safe-spaces">Espacios</AnchorLink></li>
@@ -302,7 +356,6 @@ const NavBar = () => {
       </ul>
       <div className="nav_buttons">
         {isLoggedIn ? (
-          // Si está logueado, muestra el correo y botón para cerrar sesión
           <div className="user-menu">
             <span className="user-email">{userEmail}</span>
             <button className="btn btn-logout" onClick={handleLogout}>
@@ -310,7 +363,6 @@ const NavBar = () => {
             </button>
           </div>
         ) : (
-          // Si no está logueado, muestra el botón para iniciar sesión
           <button className="btn" onClick={handleLoginClick}>Iniciar Sesión</button>
         )}
       </div>

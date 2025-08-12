@@ -4,7 +4,6 @@ import QRCode from "react-qr-code";
 import '../styles/compbo.css';
 
 const SeatMap = ({ onSelectSeat, selectedSeats }) => {
-  // Asientos agrupados en parejas (2 columnas x 5 filas por lado)
   const leftSeatGroups = [
     [1, 2],
     [3, 4],
@@ -26,7 +25,6 @@ const SeatMap = ({ onSelectSeat, selectedSeats }) => {
       <h3>Selecciona tu asiento</h3>
       <div className="bus-layout">
         <div className="bus-seats-container">
-          {/* Lado izquierdo */}
           <div className="seats-side left-side">
             {leftSeatGroups.map((group, rowIndex) => (
               <div key={`left-row-${rowIndex}`} className="seat-row">
@@ -44,10 +42,8 @@ const SeatMap = ({ onSelectSeat, selectedSeats }) => {
             ))}
           </div>
           
-          {/* Pasillo */}
           <div className="bus-aisle"></div>
           
-          {/* Lado derecho */}
           <div className="seats-side right-side">
             {rightSeatGroups.map((group, rowIndex) => (
               <div key={`right-row-${rowIndex}`} className="seat-row">
@@ -67,7 +63,6 @@ const SeatMap = ({ onSelectSeat, selectedSeats }) => {
         </div>
       </div>
       
-      {/* Indicador de puerta del autobús */}
       <div className="bus-door">Puerta</div>
       
       <div className="seat-legend">
@@ -89,7 +84,6 @@ const SearchPage = () => {
   const location = useLocation();
   const { viajes, origin, destination, passengers } = location.state || { viajes: [] };
 
-  // Estados para el flujo paso a paso
   const [currentStep, setCurrentStep] = useState(1);
   const [timeLeft, setTimeLeft] = useState(300);
   const [ticket, setTicket] = useState(null);
@@ -102,6 +96,16 @@ const SearchPage = () => {
     cardCVV: '',
     paypalEmail: '',
     passengerNames: Array.from({ length: passengers }, () => '')
+  });
+
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    passengerNames: Array.from({ length: passengers }, () => ''),
+    cardNumber: '',
+    cardExpiry: '',
+    cardCVV: '',
+    paypalEmail: ''
   });
 
   const [selectedTrip, setSelectedTrip] = useState(null);
@@ -131,6 +135,10 @@ const SearchPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    // Limpiar error cuando el usuario escribe
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: '' });
+    }
   };
 
   const handleCardNumberChange = (e) => {
@@ -138,6 +146,9 @@ const SearchPage = () => {
     value = value.substring(0, 16);
     value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
     setFormData({ ...formData, cardNumber: value });
+    if (errors.cardNumber) {
+      setErrors({ ...errors, cardNumber: '' });
+    }
   };
 
   const handleCardExpiryChange = (e) => {
@@ -151,6 +162,10 @@ const SearchPage = () => {
       ...formData,
       cardExpiry: value
     });
+    
+    if (errors.cardExpiry) {
+      setErrors({ ...errors, cardExpiry: '' });
+    }
   };
 
   const handleCardCVVChange = (e) => {
@@ -159,12 +174,23 @@ const SearchPage = () => {
       ...formData,
       cardCVV: value
     });
+    
+    if (errors.cardCVV) {
+      setErrors({ ...errors, cardCVV: '' });
+    }
   };
 
   const handlePassengerNameChange = (index, value) => {
     const newPassengerNames = [...formData.passengerNames];
     newPassengerNames[index] = value;
     setFormData({ ...formData, passengerNames: newPassengerNames });
+    
+    // Limpiar error para este pasajero
+    if (errors.passengerNames[index]) {
+      const newErrors = { ...errors };
+      newErrors.passengerNames[index] = '';
+      setErrors(newErrors);
+    }
   };
 
   const handleSelectSeat = (seatNumber) => {
@@ -185,129 +211,197 @@ const SearchPage = () => {
     }
   };
 
-  const validateCard = () => {
-    if (formData.paymentMethod === "Tarjeta de crédito") {
-      if (!/^\d{2}\/\d{2}$/.test(formData.cardExpiry)) {
-        alert("Por favor ingresa una fecha de expiración válida en formato MM/YY");
-        return false;
+  const validateStep2 = () => {
+    let isValid = true;
+    const newErrors = {...errors};
+
+    // Validar nombre del comprador
+    if (!formData.name.trim()) {
+      newErrors.name = 'El nombre es requerido';
+      isValid = false;
+    } else if (!/^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]{2,50}$/.test(formData.name)) {
+      newErrors.name = 'Solo letras (2-50 caracteres)';
+      isValid = false;
+    } else {
+      newErrors.name = '';
+    }
+
+    // Validar email
+    if (!formData.email) {
+      newErrors.email = 'El email es requerido';
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(formData.email)) {
+      newErrors.email = 'Ingrese un email válido';
+      isValid = false;
+    } else {
+      newErrors.email = '';
+    }
+
+    // Validar nombres de pasajeros
+    const passengerErrors = [...newErrors.passengerNames];
+    formData.passengerNames.forEach((name, index) => {
+      if (!name.trim()) {
+        passengerErrors[index] = 'El nombre es requerido';
+        isValid = false;
+      } else if (!/^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]{2,50}$/.test(name)) {
+        passengerErrors[index] = 'Solo letras (2-50 caracteres)';
+        isValid = false;
+      } else {
+        passengerErrors[index] = '';
       }
-      
+    });
+    newErrors.passengerNames = passengerErrors;
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const validateCard = () => {
+    const newErrors = {...errors};
+    let isValid = true;
+    const cardNumber = formData.cardNumber.replace(/\s+/g, '');
+
+    if (!/^\d{15,19}$/.test(cardNumber)) {
+      newErrors.cardNumber = 'Tarjeta inválida (15-19 dígitos)';
+      isValid = false;
+    } else {
+      newErrors.cardNumber = '';
+    }
+    
+    if (!/^\d{2}\/\d{2}$/.test(formData.cardExpiry)) {
+      newErrors.cardExpiry = 'Formato MM/YY requerido';
+      isValid = false;
+    } else {
       const [month, year] = formData.cardExpiry.split('/');
       const currentYear = new Date().getFullYear() % 100;
       const currentMonth = new Date().getMonth() + 1;
       
-      if (
+      if (parseInt(month) < 1 || parseInt(month) > 12) {
+        newErrors.cardExpiry = 'Mes inválido';
+        isValid = false;
+      } else if (
         parseInt(year) < currentYear || 
         (parseInt(year) === currentYear && parseInt(month) < currentMonth)
       ) {
-        alert("La tarjeta está expirada. Por favor verifica la fecha.");
-        return false;
-      }
-      
-      if (formData.cardCVV.length < 3) {
-        alert("El CVV debe tener al menos 3 dígitos");
-        return false;
-      }
-      
-      const cardNumber = formData.cardNumber.replace(/\s+/g, '');
-      if (cardNumber.length < 15 || cardNumber.length > 19) {
-        alert("Por favor ingresa un número de tarjeta válido");
-        return false;
+        newErrors.cardExpiry = 'Tarjeta expirada';
+        isValid = false;
+      } else {
+        newErrors.cardExpiry = '';
       }
     }
+    
+    if (!/^\d{3,4}$/.test(formData.cardCVV)) {
+      newErrors.cardCVV = 'CVV inválido (3-4 dígitos)';
+      isValid = false;
+    } else {
+      newErrors.cardCVV = '';
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const validatePayPal = () => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(formData.paypalEmail)) {
+      setErrors({...errors, paypalEmail: 'Ingrese un email PayPal válido'});
+      return false;
+    }
+    setErrors({...errors, paypalEmail: ''});
     return true;
   };
 
   const handlePurchase = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-  e.preventDefault();
-  setIsLoading(true);
-
-  if (!formData.name || !formData.email) {
-    alert("Por favor, completa todos los campos.");
-    setIsLoading(false);
-    return;
-  }
-
-  if (selectedSeats.length < passengers) {
-    alert("Por favor, selecciona un asiento para cada pasajero.");
-    setIsLoading(false);
-    return;
-  }
-
-  if (formData.paymentMethod === "Tarjeta de crédito" && !validateCard()) {
-    setIsLoading(false);
-    return;
-  }
-
-  if (formData.paymentMethod === "PayPal" && !formData.paypalEmail.includes('@')) {
-    alert("Por favor ingresa un email de PayPal válido");
-    setIsLoading(false);
-    return;
-  }
-
-  // Enviar datos al backend si es tarjeta
-  if (formData.paymentMethod === "Tarjeta de crédito") {
-    try {
-      const [month, year] = formData.cardExpiry.split('/');
-      const formattedDate = `20${year}-${month.padStart(2, '0')}-01`; // Formato YYYY-MM-DD
-
-      const response = await fetch('http://localhost:3000/add-comprador', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          Nombre: formData.name,
-          Email: formData.email,
-          Tarjeta: formData.cardNumber.replace(/\s+/g, ''),
-          Fechaven: formattedDate,
-          Cvv: formData.cardCVV
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al registrar al comprador.');
-      }
-
-      console.log('Comprador registrado con éxito');
-    } catch (error) {
-      console.error('Error:', error.message);
-      alert('Hubo un problema al registrar los datos del comprador.');
+    // Validar todos los pasos
+    if (!validateStep2()) {
       setIsLoading(false);
       return;
     }
-  }
 
-  const priceValue = selectedTrip?.precio ? parseFloat(selectedTrip.precio) : 0;
-  const totalPrice = priceValue * passengers;
-  const ticketNumber = Math.floor(Math.random() * 1000000);
+    if (selectedSeats.length < passengers) {
+      alert(`Por favor, selecciona ${passengers} asiento(s)`);
+      setIsLoading(false);
+      return;
+    }
 
-  setTicket({
-    number: ticketNumber,
-    date: new Date().toLocaleDateString(),
-    departure: selectedTrip.origen,
-    arrival: selectedTrip.destino,
-    seats: selectedSeats,
-    price: `$${totalPrice.toFixed(2)}`,
-    name: formData.name,
-    email: formData.email,
-    paymentMethod: formData.paymentMethod,
-    passengerNames: formData.passengerNames
-  });
+    if (formData.paymentMethod === "Tarjeta de crédito" && !validateCard()) {
+      setIsLoading(false);
+      return;
+    }
 
-  setCurrentStep(5);
-  setPurchaseSuccess(true);
-  setIsLoading(false);
+    if (formData.paymentMethod === "PayPal" && !validatePayPal()) {
+      setIsLoading(false);
+      return;
+    }
 
-  setTimeout(() => {
-    setPurchaseSuccess(false);
-  }, 5000);
-};
+    // Enviar datos al backend si es tarjeta
+    if (formData.paymentMethod === "Tarjeta de crédito") {
+      try {
+        const [month, year] = formData.cardExpiry.split('/');
+        const formattedDate = `20${year}-${month.padStart(2, '0')}-01`;
 
-  const nextStep = () => setCurrentStep(prev => prev + 1);
+        const response = await fetch('http://localhost:3000/add-comprador', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            Nombre: formData.name,
+            Email: formData.email,
+            Tarjeta: formData.cardNumber.replace(/\s+/g, ''),
+            Fechaven: formattedDate,
+            Cvv: formData.cardCVV
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al registrar al comprador.');
+        }
+
+        console.log('Comprador registrado con éxito');
+      } catch (error) {
+        console.error('Error:', error.message);
+        alert('Hubo un problema al registrar los datos del comprador.');
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    const priceValue = selectedTrip?.precio ? parseFloat(selectedTrip.precio) : 0;
+    const totalPrice = priceValue * passengers;
+    const ticketNumber = Math.floor(Math.random() * 1000000);
+
+    setTicket({
+      number: ticketNumber,
+      date: new Date().toLocaleDateString(),
+      departure: selectedTrip.origen,
+      arrival: selectedTrip.destino,
+      seats: selectedSeats,
+      price: `$${totalPrice.toFixed(2)}`,
+      name: formData.name,
+      email: formData.email,
+      paymentMethod: formData.paymentMethod,
+      passengerNames: formData.passengerNames
+    });
+
+    setCurrentStep(5);
+    setPurchaseSuccess(true);
+    setIsLoading(false);
+
+    setTimeout(() => {
+      setPurchaseSuccess(false);
+    }, 5000);
+  };
+
+  const nextStep = () => {
+    if (currentStep === 2 && !validateStep2()) return;
+    setCurrentStep(prev => prev + 1);
+  };
+
   const prevStep = () => setCurrentStep(prev => prev - 1);
 
   return (
@@ -368,12 +462,28 @@ const SearchPage = () => {
             <form>
               <div className="form-group">
                 <label>Nombre del comprador:</label>
-                <input type="text" name="name" value={formData.name} onChange={handleInputChange} required />
+                <input 
+                  type="text" 
+                  name="name" 
+                  value={formData.name} 
+                  onChange={handleInputChange} 
+                  className={errors.name ? 'input-error' : ''}
+                  required 
+                />
+                {errors.name && <span className="error-text">{errors.name}</span>}
               </div>
 
               <div className="form-group">
                 <label>Email del comprador:</label>
-                <input type="email" name="email" value={formData.email} onChange={handleInputChange} required />
+                <input 
+                  type="email" 
+                  name="email" 
+                  value={formData.email} 
+                  onChange={handleInputChange} 
+                  className={errors.email ? 'input-error' : ''}
+                  required 
+                />
+                {errors.email && <span className="error-text">{errors.email}</span>}
               </div>
 
               {formData.passengerNames.map((name, index) => (
@@ -383,8 +493,12 @@ const SearchPage = () => {
                     type="text"
                     value={name}
                     onChange={(e) => handlePassengerNameChange(index, e.target.value)}
+                    className={errors.passengerNames[index] ? 'input-error' : ''}
                     required
                   />
+                  {errors.passengerNames[index] && (
+                    <span className="error-text">{errors.passengerNames[index]}</span>
+                  )}
                 </div>
               ))}
 
@@ -443,7 +557,11 @@ const SearchPage = () => {
             <form onSubmit={handlePurchase}>
               <div className="form-group">
                 <label>Método de Pago:</label>
-                <select name="paymentMethod" value={formData.paymentMethod} onChange={handleInputChange}>
+                <select 
+                  name="paymentMethod" 
+                  value={formData.paymentMethod} 
+                  onChange={handleInputChange}
+                >
                   <option value="Tarjeta de crédito">Tarjeta de crédito</option>
                   <option value="PayPal">PayPal</option>
                 </select>
@@ -459,8 +577,10 @@ const SearchPage = () => {
                       value={formData.cardNumber} 
                       onChange={handleCardNumberChange}
                       placeholder="1234 5678 9012 3456"
+                      className={errors.cardNumber ? 'input-error' : ''}
                       required 
                     />
+                    {errors.cardNumber && <span className="error-text">{errors.cardNumber}</span>}
                   </div>
 
                   <div className="form-row">
@@ -473,8 +593,10 @@ const SearchPage = () => {
                         onChange={handleCardExpiryChange}
                         placeholder="MM/YY"
                         maxLength="5"
+                        className={errors.cardExpiry ? 'input-error' : ''}
                         required 
                       />
+                      {errors.cardExpiry && <span className="error-text">{errors.cardExpiry}</span>}
                     </div>
 
                     <div className="form-group">
@@ -486,8 +608,10 @@ const SearchPage = () => {
                         onChange={handleCardCVVChange}
                         placeholder="•••"
                         maxLength="4"
+                        className={errors.cardCVV ? 'input-error' : ''}
                         required 
                       />
+                      {errors.cardCVV && <span className="error-text">{errors.cardCVV}</span>}
                     </div>
                   </div>
                 </>
@@ -496,7 +620,15 @@ const SearchPage = () => {
               {formData.paymentMethod === "PayPal" && (
                 <div className="form-group">
                   <label>Correo de PayPal:</label>
-                  <input type="email" name="paypalEmail" value={formData.paypalEmail} onChange={handleInputChange} required />
+                  <input 
+                    type="email" 
+                    name="paypalEmail" 
+                    value={formData.paypalEmail} 
+                    onChange={handleInputChange} 
+                    className={errors.paypalEmail ? 'input-error' : ''}
+                    required 
+                  />
+                  {errors.paypalEmail && <span className="error-text">{errors.paypalEmail}</span>}
                 </div>
               )}
 
